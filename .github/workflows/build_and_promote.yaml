@@ -52,7 +52,7 @@ jobs:
           destination_branch: ${{ env.TEST_PROMO_BRANCH }}
           pr_title: "Deploy to Test Environment"
           pr_body: |
-            :crown: *An automated PR*
+            :crown: *An automated PR!*
 
             This PR triggers an deployment to Test once it's fully merged.
           pr_label: "auto-pr,test env,pipeline"
