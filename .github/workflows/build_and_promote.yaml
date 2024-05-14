@@ -27,7 +27,7 @@ jobs:
           draft: true
           commit-message: 'Promote latest build to production'
           branch: promotion-pr  # Change this to your desired branch name
-          base: main  # Change to your default branch
+          base: develop  # Change to your default branch
           title: 'Promote latest build to production - SHA: ${{ steps.get_sha.outputs.sha }}'
           body: |
             This PR promotes the latest build to the production environment.
