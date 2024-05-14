@@ -26,7 +26,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           draft: true
           commit-message: 'Promote latest build to test'
-          branch: test-pr  # Change this to your desired branch name
+          branch: promotion/test-pr  # Change this to your desired branch name
           base: develop  # Change to your default branch
           title: 'Promote latest build to test - SHA: ${{ steps.get_sha.outputs.sha }}'
           body: |
