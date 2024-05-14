@@ -12,23 +12,16 @@ env:
   TEST_PROMO_PR_BRANCH: promotion/test-pr
 
 jobs:
-  build:
-    name: Build
+
+  promotion:
+    name: Create Promotion Pull Request
     runs-on: ubuntu-latest
-    outputs:
-      SHORT_SHA: ${{ steps.short-sha.outputs.SHA }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
       - name: Get Short SHA
         id: short-sha
         run: echo "::set-output name=SHA::$(git rev-parse --short HEAD)"
-  promotion:
-    name: Create Promotion Pull Request
-    needs: build
-    runs-on: ubuntu-latest
-    steps:
-      # Update promotion/test-pr with new commit hash
       - name: Checkout promotion/test
         uses: actions/checkout@v2
         with:
@@ -41,9 +34,9 @@ jobs:
           git checkout -B ${{ env.TEST_PROMO_PR_BRANCH }}
           git reset --hard ${{ env.TEST_PROMO_BRANCH }}
 
-          echo $(jq '.commit="${{ needs.build.outputs.SHORT_SHA }}"' state.json) > state.json
+          echo $(jq '.commit="${{ steps.short-sha.outputs.SHA }}"' state.json) > state.json
 
-          git commit -am "Promote commit ${{ needs.build.outputs.SHORT_SHA }} to Test"
+          git commit -am "Promote commit ${{ steps.short-sha.outputs.SHA }} to Test"
           git push --force origin ${{ env.TEST_PROMO_PR_BRANCH }}
       - name: Create Pull Request
         uses: repo-sync/pull-request@v2
