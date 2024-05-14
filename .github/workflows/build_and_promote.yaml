@@ -45,6 +45,7 @@ jobs:
           git reset --hard ${{ env.TEST_PROMO_BRANCH }}
 
           echo $(jq '.commit="${{ needs.build.outputs.SHORT_SHA }}"' state.json) > state.json
+          echo $(cat state.json)
 
           git commit -am "Promote commit ${{ needs.build.outputs.SHORT_SHA }} to Test"
           git push --force origin ${{ env.TEST_PROMO_PR_BRANCH }}
