@@ -6,4 +6,6 @@ That line did trigger it. Adding to the workflow did not trigger it (as we wante
 
 State.json was not being updated, lets test this again...
 
-repo sync v4 doesnt exist. ChatGPT method uses jq outside the echo
+repo sync v4 doesnt exist. ChatGPT method uses jq outside the echo.
+
+one more push to test
