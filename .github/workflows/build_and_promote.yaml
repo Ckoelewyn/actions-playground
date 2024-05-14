@@ -6,34 +6,55 @@ on:
       - develop
     paths-ignore:
       - ".github/**"
-      
-jobs:
-  create-draft-pr:
-    runs-on: ubuntu-latest
 
+env:
+  TEST_PROMO_BRANCH: promotion/test
+  TEST_PROMO_PR_BRANCH: promotion/test-pr
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    outputs:
+      SHORT_SHA: ${{ steps.short-sha.outputs.SHA }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v2
-
-      - name: Get short SHA
-        id: get_sha
-        run: echo "::set-output name=sha::$(git rev-parse --short HEAD)"
-
-      - name: Create draft PR
-        id: create_pr
-        uses: peter-evans/create-pull-request@v3
+      - name: Get Short SHA
+        id: short-sha
+        run: echo "::set-output name=SHA::$(git rev-parse --short HEAD)"
+  promotion:
+    name: Create Promotion Pull Request
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      # Update promotion/test-pr with new commit hash
+      - name: Checkout promotion/test
+        uses: actions/checkout@v2
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
-          draft: true
-          commit-message: 'Promote latest build to test'
-          branch: promotion/test-pr  # Change this to your desired branch name
-          base: develop  # Change to your default branch
-          title: 'Promote latest build to test - SHA: ${{ steps.get_sha.outputs.sha }}'
-          body: |
-            This PR promotes the latest build to the test environment.
-            
-            SHA: ${{ steps.get_sha.outputs.sha }}
-
-      - name: Output PR URL
+          ref: "${{ env.TEST_PROMO_BRANCH }}"
+      - name: Update state.json
         run: |
-          echo "Pull Request URL: ${{ steps.create_pr.outputs.html_url }}"
+          git config --global user.name "${{ github.actor }}"
+          git config --global user.email "${{github.actor}}@users.noreply.github.com"
+
+          git checkout -B ${{ env.TEST_PROMO_PR_BRANCH }}
+          git reset --hard ${{ env.TEST_PROMO_BRANCH }}
+
+          echo $(jq '.commit="${{ needs.build.outputs.SHORT_SHA }}"' state.json) > state.json
+
+          git commit -am "Promote commit ${{ needs.build.outputs.SHORT_SHA }} to Test"
+          git push --force origin ${{ env.TEST_PROMO_PR_BRANCH }}
+      - name: Create Pull Request
+        uses: repo-sync/pull-request@v2
+        with:
+          source_branch: ${{ env.TEST_PROMO_PR_BRANCH }}
+          destination_branch: ${{ env.TEST_PROMO_BRANCH }}
+          pr_title: "Deploy to Test Environment"
+          pr_body: |
+            :crown: *An automated PR*
+
+            This PR triggers an deployment to Test once it's fully merged.
+          pr_label: "auto-pr,test env,pipeline"
+          pr_draft: true
+          github_token: ${{ secrets.GITHUB_TOKEN }}
