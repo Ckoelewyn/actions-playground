@@ -25,12 +25,12 @@ jobs:
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           draft: true
-          commit-message: 'Promote latest build to production'
-          branch: promotion-pr  # Change this to your desired branch name
+          commit-message: 'Promote latest build to test'
+          branch: test-pr  # Change this to your desired branch name
           base: develop  # Change to your default branch
-          title: 'Promote latest build to production - SHA: ${{ steps.get_sha.outputs.sha }}'
+          title: 'Promote latest build to test - SHA: ${{ steps.get_sha.outputs.sha }}'
           body: |
-            This PR promotes the latest build to the production environment.
+            This PR promotes the latest build to the test environment.
             
             SHA: ${{ steps.get_sha.outputs.sha }}
 
